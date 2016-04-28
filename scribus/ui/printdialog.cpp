@@ -20,13 +20,7 @@ for which a new license (GPL+exception) is in place.
 #include "prefscontext.h"
 #include "prefsfile.h"
 #include "customfdialog.h"
-#include "cupsoptions.h"	
-#if defined(_WIN32)
-	#include <windows.h>
-	#include <winspool.h>
-#else
-	#include <cups/cups.h>
-#endif
+#include "cupsoptions.h"
 #include "util_printer.h"
 #include "iconmanager.h"
 #include "util.h"
@@ -140,11 +134,6 @@ PrintDialog::PrintDialog( QWidget* parent, ScribusDoc* doc, const PrintOptions& 
 
 	setStoredValues(printOptions.filename, gcr);
 #if defined(_WIN32)
-	if (!outputToFile())
-	{
-		DevMode = printOptions.devMode;
-		PrinterUtil::initDeviceSettings(PrintDest->currentText(), DevMode);
-	}
 #endif
 
 	printEngineMap = PrinterUtil::getPrintEngineSupport(PrintDest->currentText(), outputToFile());
@@ -160,7 +149,6 @@ PrintDialog::PrintDialog( QWidget* parent, ScribusDoc* doc, const PrintOptions& 
 PrintDialog::~PrintDialog()
 {
 #ifdef HAVE_CUPS
-	delete cdia;
 #endif
 	cdia = 0;
 }
@@ -168,28 +156,19 @@ PrintDialog::~PrintDialog()
 void PrintDialog::SetOptions()
 {
 #ifdef HAVE_CUPS
-	PrinterOpts = "";
-	if (!cdia)
-		cdia = new CupsOptions(this, PrintDest->currentText());
-	if (!cdia->exec())
-	{
-		delete cdia; // if options was canceled delete dia 
-		cdia = 0;    // so that getoptions() in the okButtonClicked() will get 
-		             // the default values from the last successful run
-	}
 
 #elif defined(_WIN32)
 	bool done;
 	Qt::HANDLE handle = NULL;
 	DEVMODEW* devMode = (DEVMODEW*) DevMode.data();
 	// Retrieve the selected printer
-	QString printerS = PrintDest->currentText(); 
+	QString printerS = PrintDest->currentText();
 	// Get a printer handle
 	done = OpenPrinterW((LPWSTR) printerS.utf16(), &handle, NULL);
 	if (!done)
 		return;
 	// Merge stored settings, prompt user and return user settings
-	DocumentPropertiesW((HWND) winId(), handle, (LPWSTR) printerS.utf16(), (DEVMODEW*) DevMode.data(), (DEVMODEW*) DevMode.data(), 
+	DocumentPropertiesW((HWND) winId(), handle, (LPWSTR) printerS.utf16(), (DEVMODEW*) DevMode.data(), (DEVMODEW*) DevMode.data(),
 						DM_IN_BUFFER | DM_IN_PROMPT | DM_OUT_BUFFER);
 	// Free the printer handle
 	ClosePrinter(handle);
@@ -314,11 +293,6 @@ void PrintDialog::SelPrinter(const QString& prn)
 	ToolButton1->setEnabled(toFile);
 	OptButton->setEnabled(!toFile);
 #if defined(_WIN32)
-	if (!toFile)
-	{
-		if (!PrinterUtil::getDefaultSettings(PrintDest->currentText(), DevMode))
-			qWarning( tr("Failed to retrieve printer settings").toLatin1().data() );
-	}
 #endif
 	if (toFile && LineEdit1->text().isEmpty())
 	{
@@ -342,7 +316,7 @@ void PrintDialog::SelPrinter(const QString& prn)
 
 	prefs->set("CurrentPrn", prn);
 	prefs->set("CurrentPrnEngine", printEngineMap[printEngines->currentText()]);
-	
+
 	bool ps1Supported = printEngineMap.contains(CommonStrings::trPostScript1);
 	bool ps2Supported = printEngineMap.contains(CommonStrings::trPostScript2);
 	bool ps3Supported = printEngineMap.contains(CommonStrings::trPostScript3);
@@ -494,7 +468,7 @@ void PrintDialog::setStoredValues(const QString& fileName, bool gcr)
 {
 	if (m_doc->Print_Options.firstUse)
 		getDefaultPrintOptions(m_doc->Print_Options, gcr);
-	
+
 	int selectedDest = PrintDest->findText(m_doc->Print_Options.printer);
 	if ((selectedDest > -1) && (selectedDest < PrintDest->count()))
 	{

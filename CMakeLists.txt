@@ -754,19 +754,6 @@ ELSE(CAIRO_FOUND)
 ENDIF(CAIRO_FOUND)
 #>>Render Library
 
-#<<CUPS
-IF(NOT WIN32 AND NOT HAIKU)
-	FIND_PACKAGE(Cups REQUIRED)
-	IF(CUPS_FOUND)
-		SET(HAVE_CUPS 1)
-		MESSAGE("CUPS Library Found OK")
-	ENDIF(CUPS_FOUND)
-ELSE(NOT WIN32 AND NOT HAIKU)
-	# Windows doesn't use CUPS
-	SET(CUPS_INCLUDE_DIR)
-ENDIF(NOT WIN32 AND NOT HAIKU)
-#>>CUPS
-
 #<<LibXML2
 FIND_PACKAGE(LibXml2 REQUIRED)
 IF(LIBXML2_FOUND)
@@ -940,12 +927,6 @@ INCLUDE_DIRECTORIES(
 	${OSG_INCLUDE_DIR}
 	${GSL_INCLUDE_DIR}
 )
-
-IF (NOT WIN32 AND NOT HAIKU)
-INCLUDE_DIRECTORIES(
-	${CUPS_INCLUDE_DIR}
-)
-ENDIF (NOT WIN32 AND NOT HAIKU)
 
 ##############################################################################################################
 ########## Uninstall Setup                                                                          ##########

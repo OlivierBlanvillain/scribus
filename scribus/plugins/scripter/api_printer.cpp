@@ -10,9 +10,6 @@ for which a new license (GPL+exception) is in place.
 #include "util_file.h"
 #include "pslib.h"
 
-#ifdef HAVE_CUPS
-#include <cups/cups.h>
-#endif
 
 #if defined(_WIN32)
 #include "scprintengine_gdi.h"
@@ -51,7 +48,7 @@ PrinterAPI::PrinterAPI() : QObject(COLLECTOR)
 	{
 		pages.append(i+1);
 	}
-	
+
 	separation = "No";
 }
 
@@ -166,10 +163,6 @@ void PrinterAPI::doPrint()
 					cmd = "lpr -P" + prn;
 					if (Nr > 1)
 						cmd += " -#" + cc.setNum(Nr);
-#ifdef HAVE_CUPS
-// This need yet to be implemented by object Printer
-//					cmd += printer->PrinterOpts;
-#endif
 					cmd += " "+fna;
 				}
 				system(cmd.toLocal8Bit().constData());
